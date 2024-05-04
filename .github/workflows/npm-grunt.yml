@@ -1,4 +1,4 @@
-fname: NodeJS with Grunt
+name: NodeJS with Grunt
 
 on:
   push:
