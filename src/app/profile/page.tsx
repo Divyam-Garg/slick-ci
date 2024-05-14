@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { IoMdInformationCircleOutline } from "react-icons/io";
 import NavBar from "../_components/navbar";
 import { useActiveAccount } from "thirdweb/react";
@@ -10,12 +10,8 @@ import {GateFiSDK, GateFiDisplayModeEnum} from '@gatefi/js-sdk';
 import {useReadContract} from 'thirdweb/react'
 import {balanceOf} from 'thirdweb/extensions/erc20'
 import {getContract} from 'thirdweb'
+import { getUserEmail } from "thirdweb/wallets/in-app";
 
-// var overlayInstance = new GateFiSDK({
-//   merchantId: "testID",
-//   displayMode: "overlay" as GateFiDisplayModeEnum,
-//   nodeSelector: "#overlay-button"
-// })
 
 const Table = () => {
   return (
@@ -72,11 +68,44 @@ const Table = () => {
   );
 };
 
+
 const Profile = () => {
+  const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(true);
   const account = useActiveAccount();
-  // const openOverlay = () => {
-  //   overlayInstance.show();
-  // };
+  const [overlayInstance, setOverlayInstance] = useState<GateFiSDK | null>(null);
+
+  useEffect(() => {
+    const fetchEmail = async () => {
+        try {
+            setLoading(true); // Set loading to true while fetching
+            const userEmail = await getUserEmail({ client });
+            setEmail(userEmail!);
+            console.log("user email", userEmail);
+        } catch (error) {
+            console.error("Failed to fetch email", error);
+            setEmail(null!); // Ensure it's set to null if an error occurs
+        } finally {
+            setLoading(false); // Ensure loading is set to false after fetching
+        }
+    };
+
+    void fetchEmail();
+}, [client]);
+
+  useEffect(() => {
+    const instance = new GateFiSDK({
+      merchantId: "be07174d-8428-4227-be47-52391c7eafc1",
+      displayMode: "overlay" as GateFiDisplayModeEnum,
+      nodeSelector: "#overlay-button",
+      walletAddress: account?.address,
+    });
+    setOverlayInstance(instance);
+    instance.hide(); // Uncomment if you need to initially hide the overlay
+  }, [account?.address]);
+  const openOverlay = () => {
+    overlayInstance?.show();
+  };
 
   const SLICK_CONTRACT = getContract({
     address: '0x165D7c367f70eF96fe4B9b50140Ca456bbECD941',
@@ -95,11 +124,6 @@ const Profile = () => {
     }
   )
 
-  const formatBalance = (balance: bigint) => {
-    if (!balance) return 'Loading...';
-    const tokens = balance / BigInt(1e18) / BigInt(1e18); // Adjust the division based on the token's decimals
-    return tokens.toString(); // Return the balance as a string
-  }
 
   console.log("slickTokenBalance:", slickTokenBalance)
 
@@ -109,11 +133,7 @@ const Profile = () => {
         <NavBar />
       </div>
       {account ? (
-        <div className="container mx-auto py-6">
-            {/* <button id="#overlay-button" onClick={openOverlay} className="rounded-md bg-bg-100 p-2 px-4 text-sm text-text-200 hover:bg-bg-200">
-            Open Overlay
-          </button> */}
-         
+        <div className="container mx-auto py-6">    
           <div className="flex items-center justify-between rounded-lg border border-primary-300 bg-primary-100 p-6">
             <div className="flex gap-2">
               <div>
@@ -133,26 +153,30 @@ const Profile = () => {
               </div>
             </div>
             <div>
-              <button className="rounded-md bg-bg-100 p-2 px-4 text-sm text-text-200 hover:bg-bg-200">
+              <button className="rounded-md bg-bg-100 p-2 px-4 text-sm text-text-200 hover:bg-bg-200"
+              id="overlay-button" onClick={() => openOverlay()} 
+              >
                 Add funds to your account
               </button>
             </div>
           </div>
-          <div className="flex items-center justify-between pt-6">
-            <div className="flex gap-2">
+          {/* <div className="flex items-center justify-between pt-6"> */}
+            {/* <div className="flex gap-2">
               <div>
                 <h3 className="text-lg text-text-100">Account Balance</h3>
                 <p className="text-sm text-text-200">
                   Your current balance in your account
                 </p>
-              </div>
-            </div>
-            <div>
             <h3 className="text-lg text-text-100">
-                {slickTokenBalanceLoading ? 'Loading...' : slickTokenBalance}
+                {
+                  slickTokenBalanceLoading ? 'Loading...' : 
+                  slickTokenBalance ?
+                 formatBalance(slickTokenBalance) : 0
+                }
               </h3>
-            </div>
-            </div>
+              </div>
+            </div> */}
+            {/* </div> */}
           <div className="py-6">
             <h4 className="text-xl text-text-100">Resource Limits</h4>
             <p className="text-sm text-text-200">

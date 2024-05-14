@@ -21,9 +21,9 @@ const NavBar = () => {
         </div>
         <ul className="flex items-center gap-8 text-sm text-text-200">
           <li>Home</li>
-          <li>About</li>
-          <li>Services</li>
-          <li>Contact</li>
+          <Link href='/profile'>Profile</Link>
+          {/* <li>Services</li>
+          <li>Contact</li> */}
         </ul>
       </div>
       <div className="flex items-center gap-4">
@@ -31,7 +31,7 @@ const NavBar = () => {
         <Link href='https://github.com/apps/slickci/installations/select_target' target="_blank" className="flex items-center justify-center gap-2 rounded-lg bg-primary-100 p-3 hover:bg-bg-300">
           <FaGithub className="inline" size={16} color="white" />
           <p className="rounded-md text-xs text-text-100">
-            Connect Github Repo
+            Add a Github Repo
           </p>
         </Link>
       </div>
